@@ -1,0 +1,49 @@
+---
+
+- name: "Creating VG's"
+  community.general.lvg:
+    vg: "{{ item.vg }}"
+    pvs: "{{ item.pvs }}"
+  loop: "{{ vg_list }}"
+
+
+- name: "Creating LV's"
+  community.general.lvol:
+    vg: "{{ item.vg }}"
+    lv: "{{ item.lv }}"
+    size: "{{ item.size }}"
+    shrink: "{{ item.shrink }}"
+  loop: "{{ lv_list }}"
+
+
+- name: "Create SWAP"
+  shell:
+    cmd: "mkswap /dev/oravg/swap && swapon -a"
+
+
+- name: "Creating directories"
+  file:
+    path: "{{ item }}"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "0775"
+    recurse: "yes"
+  loop: "{{ dir_list }}"
+
+
+- name: "Create Filesystems"
+  community.general.filesystem:
+    fstype: "{{ item.fstype }}"
+    dev: "{{ item.dev }}"
+  loop: "{{ fs_list }}"
+
+
+- name: "Mount filesystems"
+  mount:
+    name: "{{ item.name }}"
+    src: "{{ item.src }}"
+    fstype: "{{ item.fstype }}"
+    opts: "defaults"
+    state: "mounted"
+  loop: "{{ mount_list }}"

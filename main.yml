@@ -1,0 +1,18 @@
+# Requer ansible-galaxy collection install community.general
+#
+- name: Setup Volume Group
+  hosts: all
+  gather_facts: no
+
+  pre_tasks:
+    - setup:
+        gather_subset: min
+
+  tasks:
+    - include_vars: lvm_vars.yml
+
+    - name: "LVM tasks"
+      include_role:
+        name: lvm_task
+
+

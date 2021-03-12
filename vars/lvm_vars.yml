@@ -1,0 +1,35 @@
+---
+
+vg_list :
+  - { vg: "oravg", pvs: "/dev/sdb"} # item 0
+  - { vg: "datavg", pvs: "/dev/sdc"} # item 1
+  - { vg: "bkpvg", pvs: "/dev/sdd"} # item 2
+
+lv_list:
+  - { vg: "{{ vg_list.0.vg }}", lv: "swap", shrink: "no", size: "16g" }
+  - { vg: "{{ vg_list.0.vg }}", lv: "oralv", shrink: "no", size: "100g" }
+  - { vg: "{{ vg_list.1.vg }}", lv: "archlv", shrink: "no", size: "100g" }
+  - { vg: "{{ vg_list.1.vg }}", lv: "datalv", shrink: "no", size: "100%FREE" }
+  - { vg: "{{ vg_list.2.vg }}", lv: "bkplv", shrink: "no", size: "100%FREE" }
+
+
+dir_list:
+  - "/oracle"
+  - "/oracle/NFP/sapdata"
+  - "/u01/oraarch"
+  - "/u01/backup"
+
+fs_list:
+  - { fstype: "xfs", dev: "/dev/{{vg_list.0.vg}}/{{ lv_list.1.lv }}" } # for oralv
+  - { fstype: "xfs", dev: "/dev/{{vg_list.1.vg}}/{{ lv_list.2.lv }}" } # for archlv
+  - { fstype: "xfs", dev: "/dev/{{vg_list.1.vg}}/{{ lv_list.3.lv }}" } # for datalv
+  - { fstype: "xfs", dev: "/dev/{{vg_list.2.vg}}/{{ lv_list.4.lv }}" } # for bkplv
+
+
+mount_list:
+  - { name: "{{ dir_list.0 }}", src: "{{ fs_list.0.dev }}", fstype: "xfs" } # mount /dev/oravg/oralv on /oracle
+  - { name: "{{ dir_list.1 }}", src: "{{ fs_list.2.dev }}", fstype: "xfs" } # mount  /dev/datavg/datalv on /oracle/NFP/sapdata
+  - { name: "{{ dir_list.2 }}", src: "{{ fs_list.1.dev }}", fstype: "xfs" } # mount /dev/datavg/archlv on /u01/oraarch
+  - { name: "{{ dir_list.3 }}", src: "{{ fs_list.3.dev }}", fstype: "xfs" } # mount /dev/bkpvg/bkplv on /u01/backup
+  - { name: "none", src: "{{ /dev/oravg/swap }}", fstype: "swap" } # mount /dev/oravg/swap on /u01/backup
+
